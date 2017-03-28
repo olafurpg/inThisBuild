@@ -4,3 +4,5 @@ inThisBuild(Seq(
 ))
 
 lazy val myproject = crossProject
+lazy val myprojectJVM = myproject.jvm
+lazy val myprojectJS = myproject.js
