@@ -1,3 +1,5 @@
+Scalameta
+""""""""
 Scalameta is a modern metaprogramming library for Scala that supports a
 wide range of language versions and execution platforms. Originally,
 Scalameta was founded to become a better macro system for Scala, but
