@@ -43,7 +43,7 @@ designed with the following goals in mind:
 - easy to use for macro authors, with common pitfalls guarded by the type
   system.
 - portable across Scala 2.x, Dotty, IntelliJ Scala Plugin and other Scala
-  language compilers in the future.
+  compilers in the future.
 
 To demonstrate the ease of using Scalamacros, let's implement a `fieldNames`
 macro to extract the field names of a case class.
@@ -55,31 +55,32 @@ import scala.macros._
 object CaseClass {
   def fieldNames[T]: List[String] = macro {
     val names = T.vals
+       // fields of case classes have the "case" modifiers
       .filter(_.isCase)
-      .map(v => Lit.String(v.name.value))
+      // construct string literal tree node
+      .map(field => Lit.String(field.name.value))
     q"_root_.scala.collection.immutable.List(..$names)"
   }
 }
 ```
 
 Observe that a single `import scala.macros._` is enough to get started with Scalamacros.
-Also, notice that we can use quasiquotes and we don't have pass around a Scala
-compiler Context or Universe, unlike in scala.reflect.
+Also, notice that we use quasiquotes and the signature of `fieldNames` contains
+no compiler specific types.
 We can test our macro works as expected
 
 ```scala
 case class User(name: String, age: Int)
 assert(List("name", "age") == CaseClass.fieldNames[User])
 ```
-
-I hope this example is enough to get you excited about Scalamacros.
+I hope this example got you excited about the potential for Scalamacros.
 
 ## Next steps
 
-The work on Scalamacros will be an iterative processes between 
+Following the recommendation of the Scala Center Advisory Board, the work on
+Scalamacros will be an iterative processes between
 
-1. implementing macro features that have been approved by both the Scala and
-   Dotty compiler teams
+1. implementing macro features that have been approved for inclusion into Scalamacros
 2. gathering feedback from the community on what macro features merit inclusion
    in Scalamacros.
 
@@ -97,33 +98,58 @@ Blackbox def macros share the following attributes:
 - they're invoked at compile-time instead of runtime
 - they can query the compiler for semantic information such as term types and
   symbols.
-- from the end user's perspective, they look and behave like any regular Scala
-  method
+- from the end user's perspective, they look and behave much like regular Scala
+  methods
 
-These attributes of blackbox def macros make them flow seamlessly with
-regular Scala code and IDEs such as IntelliJ.
+These attributes of blackbox def macros enable them to mix naturally into
+Scala codebases and play nicely with IDEs such as IntelliJ.
 However, some scala.reflect macros rely on more advanced capabilities that
 are not supported by blackbox def macros.
-Most notably, these
-
-- it does not synthesize new globally accesible definitions, unlike macro
-  annotations
-- the return type `List[String]` is not narrowed down to a more precise type,
-  unlike what whitebox def macro are capable of
-
+Most notably, these are whitebox def macros and macro annotations.
 
 ### Whitebox def macros
 
-Whitebox def macros have not been approved for inclusion in Scalamacros.
+Whitebox def macros have not been approved for inclusion into Scalamacros.
+Whitebox macros are similar to blackbox def macros with the distinction
+that the result type of whitebox def macros can be narrowed from the call-site.
+For example, imagine that we wish to implement a macro to convert case classes
+into tuples.
 
-Whitebox def macros are distinguied from blackbox def macros by the ability
-to narrow the result type of a def macro.
-For example, imagine that we 
+```scala
+import scala.macros._
+object CaseClass {
+  def toTuple[T](e: T): Product = macro { ??? }
+  case class User(name: String, age: Int)
+  // if blackbox: expected (String, Int), got Product
+  // if whitebox: OK
+  val user: (String, Int) = CaseClass.toTuple(User("Jane", 30))
+}
+```
+
+Whitebox macros introduce several problems that blackbox macros don't
+suffer from
+- IDEs like IntelliJ are unable infer the correct type since they need
+  to be able to invoke the macro body in order to typecheck the the expanded
+  code.
+- the typechecker needs to accommodate the inferred result types of expanded
+  whitebox macros in all of the languages typing rules. For example, see
+  [fundep materialization]. This impacts portability of the macro system.
 
 ### Macro annotations
 
-Macro annotations have not been approved for inclusion in Scalamacros.
+Macro annotations have not been approved for inclusion into Scalamacros.
+Macro annotations have the ability to synthesize publicly available definitions.
+For example,
+```scala
+@json case class User(name: String, age: Int)
 
+object MyApp {
+  User("John", 18).toJson
+  User.fromJson(""" { user: "John", age: 40 } """)
+}
+```
+
+### Share your thoughts
 If you are the author of a scala.reflect macro that , we invite you to start a thread
 in [Scala Contributors] and mention
 
@@ -132,6 +158,8 @@ in [Scala Contributors] and mention
 - justify why your macro can't be replaced by a compiler plugin or code
   generation.
 
+[Scala Contributors]: https://contributors.scala-lang.org/
+[fundep materialization]: https://docs.scala-lang.org/overviews/macros/implicits.html#fundep-materialization
 [Scala Macros]: https://github.com/scalamacros/scalamacros
 [scalamacros/scalamacros]: https://github.com/scalamacros/scalamacros
 [minutes]: https://scala.epfl.ch/minutes/2017/09/12/september-12-2017.html
