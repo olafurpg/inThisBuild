@@ -8,7 +8,8 @@ date: 21-9-2017
 This week, the Scala Center begins a new initiative to bring
 non-experimental macros into the official scalac and dotc distributions.
 This project will be developed in close collaboration with the Scala community,
-the Dotty team at EPFL and Scala compiler team at Lightbend.
+the Dotty team at EPFL, Scala compiler team at Lightbend and the IntelliJ Scala
+Plugin team at Jetbrains.
 This initiative follows [SCP-014], a proposal that got approved with an
 overwhelming majority at the Scala Center Advisory Board meeting last week.
 
@@ -26,6 +27,18 @@ and non-portable metaprogramming API based on Scala 2.x compiler internals.
 Even five years after their introduction, scala.reflect macros still can't
 expand in IntelliJ, leading to proliferation of spurious red squiggles -
 sometimes in pretty simple code.
+
+Quoting Eugene Burmako, the author of Scala macros,
+in [SIP-16] on self-cleaning macros
+
+> While trying to fix these problems via evolutionary changes to the current
+> macro system, we have realized that most of them are caused by the decision
+> to use scala.reflect as the underlying metaprogramming API. Modelled after
+> compiler internals, scala.reflect inherits many of its peculiar design
+> choices. Extensive use of desugarings and existence of multiple independent
+> program representations may have worked well for compiler development, but
+> they turned out to be inadequate for a public API.
+
 As a result of these known limitations, the language committee has decided to
 retire the scala.reflect-based macro system.
 
@@ -60,8 +73,8 @@ object CaseClass {
 
 Observe that a single `import scala.macros._` is enough to get started with
 Scalamacros.
-Also, notice that quasiquotes are supported and the lightweight signature
-of `fieldNames`.
+Also, notice that the macro definition and implementation are merged and that
+quasiquotes are supported.
 We can test our macro works as expected
 
 ```scala
@@ -69,6 +82,7 @@ case class User(name: String, age: Int)
 assert(List("name", "age") == CaseClass.fieldNames[User])
 ```
 I hope this example got you excited about the potential for Scalamacros.
+The demonstrated APIs are only tentat
 
 ## Next steps
 
@@ -78,12 +92,14 @@ Here is a roughly estimated timeline for the project:
 
 - in Dotty, Liu Fengyun a Phd student at EPFL will work on adding support
   for Scalamacros as soon as possible.
+- in IntelliJ, Mikhail Mutcianko from the Scala Plugin team at Jetbrains will
+  work on adding support for Scalamacros as soon as possible.
 - in Scala 2.12, we experiment with Scalamacros via compiler plugins
+  as soon as possible.
 - in Scala 2.13, we continue to experiment with Scalamacros via compiler
   plugins and compiler feature flags in later minor releases
 - in Scala 2.14 Scalamacros no longer “experimental” and scala.reflect is
   deprecated
-<!-- - TODO(olafur) confirm commitment from IJ -->
 
 Following the recommendation of the Scala Center Advisory Board, the work on
 Scalamacros will be an iterative processes between
@@ -105,17 +121,22 @@ Examples of blacbox def macros include: `CaseClass.fieldNames` above, ScalaTest
 Blackbox def macros share the following attributes:
 
 - they're invoked at compile-time instead of runtime
-- they can query the compiler for semantic information such as term types and
-  symbols.
+- they can query the compiler for semantic information such as types and symbols.
 - from the end user's perspective, they look and behave much like regular Scala
   methods
 
 These attributes of blackbox def macros enable them to mix naturally into
-Scala codebases and play nicely with IDEs such as IntelliJ.
+Scala codebases and play nicely with IDEs such as IntelliJ without
+customizations.
 
 ### SIP proposal
 
-Alongside the blackbox def macro implementations.
+Alongside adding support for a limited set of blackbox def macros,
+we will prepare a SIP proposal for making Scalamacros an official Scala
+language feature.
+
+### Documentation
+
 
 ### Share your feedback
 Some scala.reflect macros rely on advanced capabilities beyond what
@@ -132,7 +153,8 @@ in [Scala Contributors] and mention
 
 #### Whitebox def macros
 
-Whitebox def macros have not been approved for inclusion into Scalamacros.
+Whitebox def macros have neither been approved nor rejected for inclusion into
+Scalamacros.
 Whitebox macros are similar to blackbox def macros with the distinction
 that the result type of whitebox def macros can be narrowed at each call-site.
 For example, imagine that we wish to implement a macro to convert case classes
@@ -152,6 +174,16 @@ object CaseClass {
 Whitebox macros are more powerful than blackbox def macros.
 A whitebox macro that declares its result type as `Any`
 can have it's result type inferred to a custom precise type at every call-site.
+If such a whitebox macro is marked implicits for example, it needs to be expanded
+first in order to be disqualified as an implicit candidate.
+
+Quoting Eugene Burmako in [SIP-28] on inline/meta
+
+> The main motivation for getting rid of whitebox expansion is simplification -
+> both of the macro expansion pipeline and the typechecker.  Currently, they
+> are inseparably intertwined, complicating both compiler evolution and tool
+> support.
+
 Quoting the [minutes from the Scala Center Advisory Board][SCP-014]:
 
 > Dotty, he [Martin Odersky] says, wants to be a “capable language” rather than
@@ -162,11 +194,12 @@ Quoting the [minutes from the Scala Center Advisory Board][SCP-014]:
 Adriaan Moors, the Scala compiler team lead at Lightbend agreed.
 
 If you want to see whitebox macros approved for inclusion in Scalamacros,
-we invite you to share your feedback.
+we invite you to share your feedback in [Scala Contributors].
 
 #### Macro annotations
 
-Macro annotations have not been approved for inclusion into Scalamacros.
+Macro annotations have neither been approved nor rejected for inclusion into
+Scalamacros.
 Macro annotations have the ability to synthesize publicly available definitions.
 For example, the `@json`
 ```scala
@@ -178,11 +211,10 @@ object MyApp {
 }
 ```
 
-
-
 [Scala Contributors]: https://contributors.scala-lang.org/
 [fundep materialization]: https://docs.scala-lang.org/overviews/macros/implicits.html#fundep-materialization
 [Scala Macros]: https://github.com/scalamacros/scalamacros
 [scalamacros/scalamacros]: https://github.com/scalamacros/scalamacros
 [minutes]: https://scala.epfl.ch/minutes/2017/09/12/september-12-2017.html
 [SCP-014]: https://scala.epfl.ch/minutes/2017/09/12/september-12-2017.html#scp-014-production-ready-scalamacrosscalamacros
+[SIP-16]: https://github.com/scala/docs.scala-lang/pull/57#issuecomment-239210760
