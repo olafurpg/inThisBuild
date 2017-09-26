@@ -58,7 +58,6 @@ Another justification for retiring the scala.reflect-based macro system was
 that a new macro system based on Scalameta was "just around the corner".
 
 ### v3: scala.meta
-TODO(olafur) point out SIP-29
 
 The [Scalameta] project was founded to become a better macro system for Scala,
 with the vision to replace scala.reflect as the de-facto metaprogramming
@@ -72,6 +71,8 @@ and
 The novelty with Scalameta macros was that they converted compiler-specific
 ASTs into the [Scalameta AST], which is is a large collection "dumb" data
 containers that leak no implementation details from the compiler.
+The details of this approach are explained in more detail in [SIP-29], a
+proposal to use Scalameta as the foundation for building macros in Scala.
 
 In Scalafmt, I use Scalameta macro annotations to generate readers for
 over 
@@ -342,6 +343,7 @@ Quoting the [minutes from the Scala Center Advisory Board][SCP-014]:
 > to look at each one” of the ways whitebox macros are being used. 
 
 Adriaan Moors, the Scala compiler team lead at Lightbend agreed with Martin.
+
 If you want to see whitebox macros approved for inclusion in macros v4,
 we invite you to share your thoughts in [Scala Contributors].
 
@@ -357,32 +359,52 @@ Popular macro annotation libraries include
 - [Freestyle](http://frees.io/): cohesive & pragmatic framework of FP centric
   Scala libraries
 
-For example, the `@json`
+To show an example macro annotation, consider the following `@deriving` macro
+annotation example from [fommil/stalactite]
 
 ```scala
-@json class User(name: String, age: Int)
+@deriving(Encoder, Decoder)
+case class User(name: String, age: Int)
 
-object MyApp {
-  User("John", 18).toJson
-  User.fromJson(""" { user: "John", age: 40 } """)
+// expands into
+case class User(name: String, age: Int)
+object User {
+  implicit val encoder: Encoder[User] = DerivedEncoder.gen
+  implicit val decoder: Decoder[User] = DerivedDecoder.gen
 }
 ```
+The unique feature of macro annotations is that they can synthesize publicly
+available definitions such as `User.encoder/decoder`.
+It is generally considered best practice to place implicit
+typeclass instances in the companion object.
+This pattern significantly improves on compile times and prevents code bloat
+compared to full-derivation at each call-site.
 
-Acknowledge important use-cases for macro annotations
+Surely, it's possible to manually write out the
+`implicit val decoderBar: Decoder[Bar] = DerivedDecoder.gen`
+parts.
+However, for large business applications with many domain-specific data types
+and typeclasses, such boilerplate hurts readability and often falls prey to
+typos, leading to bugs.
 
-- public type providers 
-  - simulacrum, frees
-  - can they be replaced with code generation?
-  - docstrings
-  - synthetic
+Old-fashioned code generation via scripting can used as an
+alternative to macro annotations.
+On the other hand, such code generation traditionally comes with a non-trivial
+build tax.
+Maybe it's possible to provide better tools for traditional code generation
+via scripting, replacing the needs for macro annotations.
+
+We are interested in hearing your opinions.
+If you want to see macro annotations approved for inclusion in macros v4, we
+invite you to share your thoughts in [Scala Contributors].
 
 ## Acknowledgements
 
 On behalf of the Scala Center,
 I would like to express my great gratitude to Eugene Burmako and his relentless
-work to make macros in Scala as popular and powerful as they are today.
-Eugene has been a steward of macros in Scala for over 6 years now.
-As part of his professional and personal time, he has generously worked on
+work to make macros in Scala as capable and popular as they are today.
+Eugene has been a steward of macros in Scala for over 6 years.
+During his both professional and personal time, he has generously worked on
 exploring new metaprogramming paradigms, mentored dozens of people (including
 myself!) and communicated his findings with the Scala community both online and
 offline.
@@ -400,6 +422,7 @@ stand up to the challenge to complete this project to end.
 [public type providers]: http://docs.scala-lang.org/overviews/macros/typeproviders.html#public-type-providers
 [Scala Macros]: https://github.com/scalamacros/scalamacros
 [scalamacros/scalamacros]: https://github.com/scalamacros/scalamacros
+[fommil/stalactite]: https://gitlab.com/fommil/stalactite
 [minutes]: https://scala.epfl.ch/minutes/2017/09/12/september-12-2017.html
 [SCP-014]: https://scala.epfl.ch/minutes/2017/09/12/september-12-2017.html#scp-014-production-ready-scalamacrosscalamacros
 [SIP-16]: https://github.com/scala/docs.scala-lang/pull/57#issuecomment-239210760
