@@ -287,8 +287,14 @@ Whitebox def macros have neither been approved nor rejected for inclusion into
 macros v4.
 Whitebox macros are similar to blackbox def macros with the distinction
 that the result type of whitebox def macros can be refined at each call-site.
-For example, imagine that we wish to implement a macro to convert case classes
-into tuples.
+The ability to refine the result types opens up exciting applications including
+- [fundep materialization], used by shapeless Generic
+- [extractor macros], used by quasiquotes in scala.reflect, scala.meta, and
+scala.macros
+- [anonymous type providers]
+
+To give an example of how blackbox and whitebox macros differ, imagine that we
+wish to implement a macro to convert case classes into tuples.
 
 ```scala
 import scala.macros._
@@ -301,13 +307,16 @@ object CaseClass {
 }
 ```
 
-Whitebox macros are more powerful than blackbox def macros.
-A whitebox macro that declares its result type as `Any`
-can have it's result type inferred to a custom precise type at every call-site.
-If such a whitebox macro is marked implicits for example, it needs to be expanded
-first in order to be disqualified as a candidate during implicit search.
+As you can see from this example, whitebox macros are more powerful than
+blackbox def macros.
+A whitebox macro that declares its result type as `Any` can have it's result
+type inferred to a different precise type at every call-site.
+This powerful capability opens up questions, such as if such a whitebox macro
+is marked implicits for example, does it need to be expanded first in order to
+be disqualified as a candidate during implicit search.
 
-Quoting Eugene Burmako in [SIP-29] on inline/meta
+Quoting Eugene Burmako from [SIP-29] on inline/meta, which contains a long
+and detailed section on "Loosing whiteboxity"
 
 > The main motivation for getting rid of whitebox expansion is simplification -
 > both of the macro expansion pipeline and the typechecker.  Currently, they
@@ -322,13 +331,8 @@ Quoting the [minutes from the Scala Center Advisory Board][SCP-014]:
 > to look at each one” of the ways whitebox macros are being used. 
 
 Adriaan Moors, the Scala compiler team lead at Lightbend agreed.
-
-TODO(olafur) acknowledge important use-cases for whitebox
-
-- fundep materialization -> compiler plugin?
-
 If you want to see whitebox macros approved for inclusion in macros v4,
-we invite you to share your feedback in [Scala Contributors].
+we invite you to share your thoughts in [Scala Contributors].
 
 #### Macro annotations
 
@@ -366,6 +370,8 @@ I would like to express my great gratitude to Eugene Burmako and his
 [thesis]: https://infoscience.epfl.ch/record/226166/files/EPFL_TH7159.pdf
 [Scala Contributors]: https://contributors.scala-lang.org/
 [fundep materialization]: https://docs.scala-lang.org/overviews/macros/implicits.html#fundep-materialization
+[anonymous type providers]: http://docs.scala-lang.org/overviews/macros/typeproviders.html#anonymous-type-providers
+[extractor macros]: http://docs.scala-lang.org/overviews/macros/extractors.html
 [Scala Macros]: https://github.com/scalamacros/scalamacros
 [scalamacros/scalamacros]: https://github.com/scalamacros/scalamacros
 [minutes]: https://scala.epfl.ch/minutes/2017/09/12/september-12-2017.html
