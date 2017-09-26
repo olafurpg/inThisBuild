@@ -26,7 +26,7 @@ details.
 
 If you want the TL;DR, see [next steps](#next-steps).
 
-### v2: scala.reflect
+### v1: scala.reflect
 
 Scala.reflect-based macros are an integral part of the Scala 2.x ecosystem.
 Well-known libraries like ScalaTest, Sbt, Spark, Circe, Slick, Shapeless,
@@ -57,7 +57,7 @@ retire the scala.reflect-based macro system.
 Another justification for retiring the scala.reflect-based macro system was
 that a new macro system based on Scalameta was "just around the corner".
 
-### v3: scala.meta
+### v2: scala.meta
 
 The [Scalameta] project was founded to become a better macro system for Scala,
 with the vision to replace scala.reflect as the de-facto metaprogramming
@@ -120,7 +120,7 @@ build a macro system on top of Scalameta.
 From now on, Scalameta's primary focus is to support building developer tools such
 as Scalafmt and Scalafix.
 
-### v4: scala.macros
+### v3: scala.macros
 
 This spring, Eugene Burmako at Twitter and Liu Fengyun at EPFL worked on a
 new macro system to address the limitations of scala.reflect-based and
@@ -134,26 +134,26 @@ scala-reflect API with the following distinction, it's
 
 - smaller, the API exposes as little as possible from the compiler
   while still being able to support most interesting macro applications.
-- more robust, common pitfalls such as hygiene are guarded by the type system
-  enabled by separation of typed and untyped trees.
+- more robust, with common pitfalls in scala.reflect-based macros guarded by
+  the type system with separation of typed and untyped trees.
 
-Scala Macros v4 build on the same foundation as scala.reflect by providing an
-API to lazily extract and construct Scala syntax.
+Scala Macros v3 build on top of a similar design as scala.reflect by providing
+an API to lazily extract and construct Scala syntax.
 It is no longer necessary to pass around path dependent trees or contexts,
 avoiding the need for macro bundles.
 Moreover, the def macro definition and implementation are merged into a single
 `def name = macro` definition, simplifying the macro expansion engine and
 preventing common mistakes made by novice macro authors.
 
-One paint point in macros v2 that macros v4 does not address is the separate
+One paint point in macros v2 that macros v3 does not address is the separate
 compilation restriction.
 Macro definitions must still be compiled in a separate project from where they
 are used.
-Nevertheless, we believe that v4 represents a significant enough improvement to
+Nevertheless, we believe that v3 represents a significant enough improvement to
 forgive this restriction, which is admittedly an inconvenience for macro author
 but arguably not a blocker for adoption.
 
-To give you a taste of the tentative macros v4 API, let's implement a `fieldNames`
+To give you a taste of the tentative macros v3 API, let's implement a `fieldNames`
 macro to extract fields names of a case class
 
 ```scala
@@ -171,7 +171,7 @@ object CaseClass {
 ```
 
 Observe that a single `import scala.macros._` is enough to get started with
-macros v4.
+macros v3.
 Also, notice that quasiquotes are supported.
 We can test our macro works as expected
 
@@ -180,7 +180,7 @@ case class User(name: String, age: Int)
 assert(List("name", "age") == CaseClass.fieldNames[User])
 ```
 I hope this example is enough to get you excited about the potential for Scala
-Macros v4.
+Macros v3.
 The demonstrated APIs are only tentative, and must pass thorough
 [SIP] review before being approved for inclusion as part of
 the Scala Language Specification.
@@ -194,26 +194,26 @@ collaboration between many different parties.
 We still have a long way to go to reach the level of expressiveness, robustness
 and simplicity that we seek in a stable macro system.
 
-Here below is a rough estimated roadmap for macros v4
+Here below is a rough estimated roadmap for macros v3
 
-- in Scala 2.12, we experiment with macros v4 via compiler plugins
+- in Scala 2.12, we experiment with macros v3 via compiler plugins
   as soon as possible.
-- in Dotty, Liu Fengyun at EPFL will work on adding support for macros v4 as
+- in Dotty, Liu Fengyun at EPFL will work on adding support for macros v3 as
   soon as possible.
 - in IntelliJ, Mikhail Mutcianko from the Scala Plugin team at Jetbrains will
-  work on adding support for macros v4 as soon as possible.
-- in Scala 2.13, we continue to experiment with macros v4 via compiler
+  work on adding support for macros v3 as soon as possible.
+- in Scala 2.13, we continue to experiment with macros v3 via compiler
   plugins and compiler feature flags in later minor releases
-- in Scala 2.14 macros v4 no longer “experimental” and scala.reflect is
+- in Scala 2.14 macros v3 no longer “experimental” and scala.reflect is
   deprecated
 
 Following the recommendation of the Scala Center Advisory Board, the work on
-macros v4 will be an iterative processes between
+macros v3 will be an iterative processes between
 
 -  implementing macro features that have been approved for inclusion into
-   macros v4
+   macros v3
 -  gathering feedback from the community on what macro features merit inclusion
-   in macros v4
+   in macros v3
 
 As for the first part, we immediately begin development for a limited subset of
 blackbox def macros.
@@ -239,7 +239,7 @@ Scala codebases and prime for inclusion in the Scala Language Specification.
 
 Alongside prototyping preliminary support for a limited set of blackbox def
 macros, we will immediately begin preparing a SIP proposal to include macros
-v4 into the Scala Language Specification.
+v3 into the Scala Language Specification.
 We plan to address the valuable reviews made to [SIP-29] on inline/meta in a
 new proposal, so that SIP-29 can be superseded by our new proposal.
 In addition, we will document how we we aim to solve hygiene using an
@@ -258,7 +258,7 @@ should I use def macros, annotations, shapeless, a compiler plugin or code
 generation?
 There is no silver bullet, each solution comes with a set of trade-offs.
 
-We believe good documentation is critical to the success of macros v4.
+We believe good documentation is critical to the success of macros v3.
 Especially, we want to document for which use-cases macros are suitable,
 and for which use-cases they're either overkill, or insufficient.
 Macros should in general be used as a last resort.
@@ -267,7 +267,7 @@ available metaprogramming abstractions in Scala.
 Please share your thought.
 
 ### Share your feedback
-The current set of approved features in macros v4 does not reach feature parity
+The current set of approved features in macros v3 does not reach feature parity
 with the scala.reflect-based macro system.
 Some scala.reflect macros rely on advanced capabilities beyond what
 blackbox macros support.
@@ -296,7 +296,7 @@ In particular, we want to explore
 #### Whitebox def macros
 
 Whitebox def macros have neither been approved nor rejected for inclusion into
-macros v4.
+macros v3.
 Whitebox macros are similar to blackbox def macros with the distinction
 that the result type of whitebox def macros can be refined at each call-site.
 The ability to refine the result types opens up exciting applications including
@@ -335,7 +335,7 @@ analysis on "Loosing whiteboxity"
 > are inseparably intertwined, complicating both compiler evolution and tool
 > support.
 
-Note, however, that the portable design of macros v4 makes it possible to infer
+Note, however, that the portable design of macros v3 makes it possible to infer
 the correct result types for whitebox macros in IDEs such as IntelliJ.
 
 Quoting the [minutes from the Scala Center Advisory Board][SCP-014]:
@@ -350,13 +350,13 @@ and mentioned a current collaboration with Miles Sabin to improve scalac so
 that Shapeless and other libraries can rely less on macros and other
 nonstandard techniques
 
-If you want to see whitebox macros approved for inclusion in macros v4,
+If you want to see whitebox macros approved for inclusion in macros v3,
 we invite you to share your thoughts in [Scala Contributors].
 
 #### Macro annotations
 
 Macro annotations have neither been approved nor rejected for inclusion into
-macros v4.
+macros v3.
 Macro annotations have the ability to synthesize publicly available definitions,
 accommodating the [public type provider] pattern.
 Popular macro annotation libraries include
@@ -402,7 +402,7 @@ Maybe it's possible to provide better tools for traditional code generation
 via scripting, replacing the needs for macro annotations.
 We are interested in hearing your opinions.
 
-If you want to see macro annotations approved for inclusion in macros v4, we
+If you want to see macro annotations approved for inclusion in macros v3, we
 invite you to share your thoughts in [Scala Contributors].
 
 ## Acknowledgements
@@ -415,8 +415,9 @@ During both professional and personal time, he has generously worked on
 exploring new metaprogramming paradigms, mentored dozens of people (including
 myself!) and communicated his findings with the Scala community both online and
 offline.
-We are honored to take the lead from your solid guidance, and we hope we can
-stand up to the challenge to complete this project to end.
+We are honored to take the lead from your solid guidance.
+I look forward to continuing our fruitful collaboration and I hope we can stand
+up to the challenge to complete this project to end.
 
 [Scalameta AST]: https://github.com/scalamacros/scalamacros/blob/master/core/src/main/scala/scala/macros/trees/Trees.scala
 [Scalameta]: https://infoscience.epfl.ch/search?ln=en&p=Burmako%2C+Eugene&jrec=1&f=author
