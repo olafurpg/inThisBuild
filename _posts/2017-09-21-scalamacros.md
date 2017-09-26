@@ -138,11 +138,19 @@ scala-reflect API with the following distinction, it's
 
 Scala Macros v4 build on the same foundation as scala.reflect by providing an
 API to lazily extract and construct Scala syntax.
-Moreover, it is no longer necessary to pass around path dependent
-trees or contexts, avoiding the need for macro bundles.
-Finally, the def macro definition and implementation are merged into a single
+It is no longer necessary to pass around path dependent trees or contexts,
+avoiding the need for macro bundles.
+Moreover, the def macro definition and implementation are merged into a single
 `def name = macro` definition, simplifying the macro expansion engine and
 preventing common mistakes made by novice macro authors.
+
+One paint point in macros v2 that macros v4 does not address is the separate
+compilation restriction.
+Macro definitions must still be compiled in a separate project from where they
+are used.
+Nevertheless, we believe that v4 represents a significant enough improvement to
+forgive this restriction, which is admittedly an inconvenience for macro author
+but arguably not a blocker for adoption.
 
 To give you a taste of the tentative macros v4 API, let's implement a `fieldNames`
 macro to extract fields names of a case class
@@ -178,8 +186,8 @@ the Scala Language Specification.
 
 ## Next steps
 
-As the history above shows, establishing a stable and non-experimental macro
-system for Scala is a large undertaking.
+As the history above shows, establishing a stable macro system for Scala is a
+large undertaking.
 It has taken multi-year efforts to reach where we are today, involving a
 collaboration between many different parties.
 We still have a long way to go to reach the level of expressiveness, robustness
@@ -323,6 +331,9 @@ and detailed section on "Loosing whiteboxity"
 > are inseparably intertwined, complicating both compiler evolution and tool
 > support.
 
+Note, however, that the portable design of macros v4 makes it possible with
+customizations to support whitebox macros in IDEs such as IntelliJ.
+
 Quoting the [minutes from the Scala Center Advisory Board][SCP-014]:
 
 > Dotty, he [Martin Odersky] says, wants to be a “capable language” rather than
@@ -330,7 +341,7 @@ Quoting the [minutes from the Scala Center Advisory Board][SCP-014]:
 > “Scala-like” things, or to turn Scala into something else. So “we will have
 > to look at each one” of the ways whitebox macros are being used. 
 
-Adriaan Moors, the Scala compiler team lead at Lightbend agreed.
+Adriaan Moors, the Scala compiler team lead at Lightbend agreed with Martin.
 If you want to see whitebox macros approved for inclusion in macros v4,
 we invite you to share your thoughts in [Scala Contributors].
 
@@ -338,7 +349,14 @@ we invite you to share your thoughts in [Scala Contributors].
 
 Macro annotations have neither been approved nor rejected for inclusion into
 macros v4.
-Macro annotations have the ability to synthesize publicly available definitions.
+Macro annotations have the ability to synthesize publicly available definitions,
+serving as [public type providers].
+Popular macro annotation libraries include
+- [simulacrum](https://github.com/mpilquist/simulacrum) first-class syntax
+  support for type classes in Scala
+- [Freestyle](http://frees.io/): cohesive & pragmatic framework of FP centric
+  Scala libraries
+
 For example, the `@json`
 
 ```scala
@@ -355,14 +373,21 @@ Acknowledge important use-cases for macro annotations
 - public type providers 
   - simulacrum, frees
   - can they be replaced with code generation?
-
--
   - docstrings
   - synthetic
 
 ## Acknowledgements
 
-I would like to express my great gratitude to Eugene Burmako and his
+On behalf of the Scala Center,
+I would like to express my great gratitude to Eugene Burmako and his relentless
+work to make macros in Scala as popular and powerful as they are today.
+Eugene has been a steward of macros in Scala for over 6 years now.
+As part of his professional and personal time, he has generously worked on
+exploring new metaprogramming paradigms, mentored dozens of people (including
+myself!) and communicated his findings with the Scala community both online and
+offline.
+We are honored to take the lead from your solid guidance, and we hope we can
+stand up to the challenge to complete this project to end.
 
 [Scalameta AST]: https://github.com/scalamacros/scalamacros/blob/master/core/src/main/scala/scala/macros/trees/Trees.scala
 [Scalameta]: https://infoscience.epfl.ch/search?ln=en&p=Burmako%2C+Eugene&jrec=1&f=author
@@ -372,6 +397,7 @@ I would like to express my great gratitude to Eugene Burmako and his
 [fundep materialization]: https://docs.scala-lang.org/overviews/macros/implicits.html#fundep-materialization
 [anonymous type providers]: http://docs.scala-lang.org/overviews/macros/typeproviders.html#anonymous-type-providers
 [extractor macros]: http://docs.scala-lang.org/overviews/macros/extractors.html
+[public type providers]: http://docs.scala-lang.org/overviews/macros/typeproviders.html#public-type-providers
 [Scala Macros]: https://github.com/scalamacros/scalamacros
 [scalamacros/scalamacros]: https://github.com/scalamacros/scalamacros
 [minutes]: https://scala.epfl.ch/minutes/2017/09/12/september-12-2017.html
