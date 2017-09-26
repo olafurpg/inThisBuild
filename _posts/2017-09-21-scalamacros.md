@@ -233,26 +233,28 @@ Blackbox def macros share the following attributes:
   perspective, they look and behave much like regular Scala methods
 
 These attributes of blackbox def macros enable them to mix naturally into
-Scala codebases and prime for inclusion in the language specification.
+Scala codebases and prime for inclusion in the Scala Language Specification.
 
 ### SIP proposal
 
 Alongside prototyping preliminary support for a limited set of blackbox def
-macros, we will immediately start preparing a SIP proposal to include macros
+macros, we will immediately begin preparing a SIP proposal to include macros
 v4 into the Scala Language Specification.
 We plan to address the valuable reviews made to [SIP-29] on inline/meta in a
-new proposal.
-In addition, we will document how we we aim to solve hygiene, which plagues
-most macro tutorials and was previously considered to be out of scope for
-SIP-29, using an innovation discovered by Liu Fengyun and Eugene Burmako.
+new proposal, so that SIP-29 can be superseded by our new proposal.
+In addition, we will document how we we aim to solve hygiene using an
+innovation discovered by the collaboration of Liu Fengyun and Eugene Burmako.
+Hygiene plagues most macro tutorials and was previously considered to be out of
+scope for SIP-29
 
 ### Documentation
 
-There is missing comprehensive documentation that outlines the wide
-landscape of metaprogramming facilities that are available to Scala developers.
+Currently, there exists no official comprehensive documentation that outlines
+the wide landscape of metaprogramming facilities that are available to Scala
+developers.
 While discussing macros with members of the OSS community and industry,
-I repeatedly get questions such as:
-should I use def macros, annotations, shapeless, a compiler plugin or use code
+I repeatedly receive questions such as:
+should I use def macros, annotations, shapeless, a compiler plugin or code
 generation?
 There is no silver bullet, each solution comes with a set of trade-offs.
 
@@ -262,6 +264,7 @@ and for which use-cases they're either overkill, or insufficient.
 Macros should in general be used as a last resort.
 We care deeply to know what you'd like to see covered in this effort to map
 available metaprogramming abstractions in Scala.
+Please share your thought.
 
 ### Share your feedback
 The current set of approved features in macros v4 does not reach feature parity
@@ -285,9 +288,9 @@ I invite you to invite you to start a thread in [Scala Contributors] and
 share your personal thoughts.
 In particular, we want to explore
 
-- what does your macro do and why is ti important for you and your users?
+- what does your macro do and why is it important for your users?
 - can you use alternative metaprogramming techniques such as
-  old-fashioned code generation or compiler plugins to achieve the same
+  code generation scripts or compiler plugins to achieve the same
   functionality?
 
 #### Whitebox def macros
@@ -319,21 +322,21 @@ object CaseClass {
 As you can see from this example, whitebox macros are more powerful than
 blackbox def macros.
 A whitebox macro that declares its result type as `Any` can have it's result
-type inferred to a different precise type at every call-site.
-This powerful capability opens up questions, such as if such a whitebox macro
-is marked implicits for example, does it need to be expanded first in order to
-be disqualified as a candidate during implicit search.
+type refined to any precise type in the Scala typing lattice.
+This powerful capability opens up questions.
+For example, do implicit whitebox def macros always need to be expanded in
+order be disqualified as a candidate during implicit search.
 
-Quoting Eugene Burmako from [SIP-29] on inline/meta, which contains a long
-and detailed section on "Loosing whiteboxity"
+Quoting Eugene Burmako from [SIP-29] on inline/meta, which contains a detailed
+analysis on "Loosing whiteboxity"
 
 > The main motivation for getting rid of whitebox expansion is simplification -
 > both of the macro expansion pipeline and the typechecker.  Currently, they
 > are inseparably intertwined, complicating both compiler evolution and tool
 > support.
 
-Note, however, that the portable design of macros v4 makes it possible with
-customizations to support whitebox macros in IDEs such as IntelliJ.
+Note, however, that the portable design of macros v4 makes it possible to infer
+the correct result types for whitebox macros in IDEs such as IntelliJ.
 
 Quoting the [minutes from the Scala Center Advisory Board][SCP-014]:
 
@@ -342,7 +345,10 @@ Quoting the [minutes from the Scala Center Advisory Board][SCP-014]:
 > “Scala-like” things, or to turn Scala into something else. So “we will have
 > to look at each one” of the ways whitebox macros are being used. 
 
-Adriaan Moors, the Scala compiler team lead at Lightbend agreed with Martin.
+Adriaan Moors, the Scala compiler team lead at Lightbend agreed with Martin,
+and mentioned a current collaboration with Miles Sabin to improve scalac so
+that Shapeless and other libraries can rely less on macros and other
+nonstandard techniques
 
 If you want to see whitebox macros approved for inclusion in macros v4,
 we invite you to share your thoughts in [Scala Contributors].
@@ -352,7 +358,7 @@ we invite you to share your thoughts in [Scala Contributors].
 Macro annotations have neither been approved nor rejected for inclusion into
 macros v4.
 Macro annotations have the ability to synthesize publicly available definitions,
-serving as [public type providers].
+accommodating the [public type provider] pattern.
 Popular macro annotation libraries include
 - [simulacrum](https://github.com/mpilquist/simulacrum) first-class syntax
   support for type classes in Scala
@@ -360,7 +366,7 @@ Popular macro annotation libraries include
   Scala libraries
 
 To show an example macro annotation, consider the following `@deriving` macro
-annotation example from [fommil/stalactite]
+annotation from the library [Stalactite]
 
 ```scala
 @deriving(Encoder, Decoder)
@@ -375,6 +381,7 @@ object User {
 ```
 The unique feature of macro annotations is that they can synthesize publicly
 available definitions such as `User.encoder/decoder`.
+Neither whitebox or blackbox def macros have this capability.
 It is generally considered best practice to place implicit
 typeclass instances in the companion object.
 This pattern significantly improves on compile times and prevents code bloat
@@ -393,8 +400,8 @@ On the other hand, such code generation traditionally comes with a non-trivial
 build tax.
 Maybe it's possible to provide better tools for traditional code generation
 via scripting, replacing the needs for macro annotations.
-
 We are interested in hearing your opinions.
+
 If you want to see macro annotations approved for inclusion in macros v4, we
 invite you to share your thoughts in [Scala Contributors].
 
@@ -404,7 +411,7 @@ On behalf of the Scala Center,
 I would like to express my great gratitude to Eugene Burmako and his relentless
 work to make macros in Scala as capable and popular as they are today.
 Eugene has been a steward of macros in Scala for over 6 years.
-During his both professional and personal time, he has generously worked on
+During both professional and personal time, he has generously worked on
 exploring new metaprogramming paradigms, mentored dozens of people (including
 myself!) and communicated his findings with the Scala community both online and
 offline.
@@ -419,10 +426,10 @@ stand up to the challenge to complete this project to end.
 [fundep materialization]: https://docs.scala-lang.org/overviews/macros/implicits.html#fundep-materialization
 [anonymous type providers]: http://docs.scala-lang.org/overviews/macros/typeproviders.html#anonymous-type-providers
 [extractor macros]: http://docs.scala-lang.org/overviews/macros/extractors.html
-[public type providers]: http://docs.scala-lang.org/overviews/macros/typeproviders.html#public-type-providers
+[public type provider]: http://docs.scala-lang.org/overviews/macros/typeproviders.html#public-type-providers
 [Scala Macros]: https://github.com/scalamacros/scalamacros
 [scalamacros/scalamacros]: https://github.com/scalamacros/scalamacros
-[fommil/stalactite]: https://gitlab.com/fommil/stalactite
+[Stalactite]: https://gitlab.com/fommil/stalactite
 [minutes]: https://scala.epfl.ch/minutes/2017/09/12/september-12-2017.html
 [SCP-014]: https://scala.epfl.ch/minutes/2017/09/12/september-12-2017.html#scp-014-production-ready-scalamacrosscalamacros
 [SIP-16]: https://github.com/scala/docs.scala-lang/pull/57#issuecomment-239210760
