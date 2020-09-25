@@ -1,1 +1,1 @@
-addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.15")
+addSbtPlugin("ch.epfl.scala" % "sbt-bloop" % "1.4.4")
