@@ -1,1 +1,1 @@
-addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.15")
+addSbtPlugin("ch.epfl.lamp" % "sbt-dotty" % "0.5.1")
